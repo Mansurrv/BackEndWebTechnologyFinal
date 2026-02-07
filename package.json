@@ -4,6 +4,7 @@
   "description": "",
   "main": "indexTwo.js",
   "scripts": {
+    "start": "node indexTwo.js",
     "devStart": "nodemon indexTwo.js"
   },
   "repository": {
