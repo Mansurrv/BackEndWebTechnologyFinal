@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Constructor Manager | F1 Tracker</title>
+    <link rel="stylesheet" href="/css/constructors.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Racing+Sans+One&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="https://cdn-icons-png.flaticon.com/512/1995/1995515.png">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-trophy"></i>
+                    <h1>Constructor Manager</h1>
+                </div>
+                <p class="subtitle">Manage F1 constructor teams and their statistics</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn-secondary" onclick="window.location.href='/'">
+                    <i class="fas fa-home"></i> Back to Home
+                </button>
+                <button class="btn-secondary" onclick="resetForm()">
+                    <i class="fas fa-redo"></i> Reset Form
+                </button>
+            </div>
+        </header>
+
+        <div class="dashboard">
+            <!-- Form Section -->
+            <div class="form-section">
+                <div class="card form-card">
+                    <div class="card-header">
+                        <i class="fas fa-plus-circle"></i>
+                        <h2>New / Edit Constructor</h2>
+                        <span class="badge" id="formMode">CREATE</span>
+                    </div>
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label for="team"><i class="fas fa-flag-checkered"></i> Team Name</label>
+                            <input id="team" placeholder="e.g., Red Bull Racing" required>
+                            <div class="input-hint">Official constructor name</div>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="pos"><i class="fas fa-hashtag"></i> Position</label>
+                            <input id="pos" type="number" placeholder="e.g., 1" min="1" max="20" required>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="color"><i class="fas fa-palette"></i> Team Color</label>
+                            <div class="color-picker">
+                                <input id="color" type="color" value="#FF0000">
+                                <span class="color-preview" id="colorPreview"></span>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="drivers"><i class="fas fa-user-friends"></i> Drivers</label>
+                            <input id="drivers" placeholder="e.g., Verstappen / Pérez" required>
+                        </div>
+
+                        <div class="stats-grid">
+                            <div class="input-group">
+                                <label for="points"><i class="fas fa-star"></i> Points</label>
+                                <input id="points" type="number" placeholder="0" min="0">
+                            </div>
+                            
+                            <div class="input-group">
+                                <label for="wins"><i class="fas fa-trophy"></i> Wins</label>
+                                <input id="wins" type="number" placeholder="0" min="0">
+                            </div>
+                            
+                            <div class="input-group">
+                                <label for="podiums"><i class="fas fa-medal"></i> Podiums</label>
+                                <input id="podiums" type="number" placeholder="0" min="0">
+                            </div>
+                        </div>
+
+                        <div class="hidden-field">
+                            <input id="constructorId" type="hidden">
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button class="btn-primary" onclick="saveConstructor()">
+                            <i class="fas fa-save"></i> Save Constructor
+                        </button>
+                        <button class="btn-outline" onclick="resetForm()">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="card stats-card">
+                    <div class="card-header">
+                        <i class="fas fa-chart-line"></i>
+                        <h3>Constructor Stats</h3>
+                    </div>
+                    <div class="stats-summary">
+                        <div class="stat-item">
+                            <div class="stat-value" id="totalConstructors">0</div>
+                            <div class="stat-label">Total Constructors</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="totalPoints">0</div>
+                            <div class="stat-label">Total Points</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="totalWins">0</div>
+                            <div class="stat-label">Total Wins</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Constructor List -->
+            <div class="list-section">
+                <div class="card list-card">
+                    <div class="card-header">
+                        <i class="fas fa-list"></i>
+                        <h2>Constructors List</h2>
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="searchInput" placeholder="Search constructors..." oninput="filterConstructors()">
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="constructors-table" id="constructorsTable">
+                            <thead>
+                                <tr>
+                                    <th>Pos</th>
+                                    <th>Team</th>
+                                    <th>Drivers</th>
+                                    <th>Points</th>
+                                    <th>Wins</th>
+                                    <th>Podiums</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="constructorsList">
+                                <!-- Dynamic content will be loaded here -->
+                                <tr class="loading-row">
+                                    <td colspan="7">
+                                        <div class="loading-spinner">
+                                            <i class="fas fa-spinner fa-spin"></i>
+                                            <span>Loading constructors...</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="table-footer">
+                        <div class="pagination-info">
+                            Showing <span id="showingCount">0</span> of <span id="totalCount">0</span> constructors
+                        </div>
+                        <div class="table-actions">
+                            <button class="btn-icon" onclick="refreshConstructors()" title="Refresh">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                            <button class="btn-icon" onclick="exportConstructors()" title="Export Data">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast Notification -->
+        <div id="toast" class="toast">
+            <div class="toast-content">
+                <i class="fas fa-check-circle"></i>
+                <span id="toastMessage">Constructor saved successfully!</span>
+            </div>
+        </div>
+
+        <!-- Confirmation Modal -->
+        <div id="confirmModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3>Confirm Delete</h3>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this constructor? This action cannot be undone.</p>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-danger" id="confirmDeleteBtn">Delete</button>
+                    <button class="btn-outline" onclick="closeModal()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/constructors.js"></script>
+</body>
+</html>

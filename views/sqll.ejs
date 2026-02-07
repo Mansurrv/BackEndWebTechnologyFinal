@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Drivers CRUD</title>
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #f1f5f9;
+      display: flex;
+      flex-direction: column; 
+      align-items: center;
+      padding: 40px 20px;
+      margin: 0;
+      color: #1e293b;
+    }
+
+    .card {
+      background: #ffffff;
+      width: 100%;
+      max-width: 450px;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      margin-bottom: 2rem;
+      position: relative;
+      transition: transform 0.3s ease;
+    }
+
+    input {
+      display: block;
+      width: 100%;
+      margin: 12px 0;
+      padding: 12px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+
+    button {
+      background: linear-gradient(135deg, #E10600, #E10600);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
+      box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+    }
+
+    button:hover {
+      filter: brightness(1.1);
+      box-shadow: 0 6px 12px rgba(37, 99, 235, 0.3);
+    }
+
+    #drivers {
+      list-style: none;
+      padding: 0;
+      margin-top: 20px;
+    }
+
+    #drivers li {
+      background: #f8fafc;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 10px;
+      border-left: 4px solid #E10600;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Drivers CRUD Management</h1>
+
+<div class="card">
+  <h2>Add Driver</h2>
+  <input id="name" placeholder="Name">
+  <input id="team" placeholder="Team">
+  <input id="points" placeholder="Points" type="number">
+  <input id="wins" placeholder="Wins" type="number">
+  <input id="podiums" placeholder="Podiums" type="number">
+  <button id="addBtn">Add Driver</button>
+</div>
+
+<div class="card">
+  <h2>Show Drivers</h2>
+  <button id="showBtn">Show Drivers</button>
+  <ul id="drivers"></ul>
+</div>
+
+<div class="card">
+  <h2>Delete Driver</h2>
+  <input id="deleteId" placeholder="Driver ID">
+  <button id="deleteBtn">Delete Driver</button>
+</div>
+
+<div class="card">
+  <h2>Update Driver Points</h2>
+  <input id="updateId" placeholder="Driver ID">
+  <input id="updatePoints" placeholder="New Points" type="number">
+  <button id="updateBtn">Update Driver</button>
+</div>
+
+<script>
+  // API URL for drivers
+  const API_URL = '/api/drivers';
+  
+  // DOM Elements
+  const nameInput = document.getElementById('name');
+  const teamInput = document.getElementById('team');
+  const pointsInput = document.getElementById('points');
+  const winsInput = document.getElementById('wins');
+  const podiumsInput = document.getElementById('podiums');
+  const deleteIdInput = document.getElementById('deleteId');
+  const updateIdInput = document.getElementById('updateId');
+  const updatePointsInput = document.getElementById('updatePoints');
+  const driversList = document.getElementById('drivers');
+  const addBtn = document.getElementById('addBtn');
+  const showBtn = document.getElementById('showBtn');
+  const deleteBtn = document.getElementById('deleteBtn');
+  const updateBtn = document.getElementById('updateBtn');
+  
+  // Add event listeners when DOM is loaded
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('Page loaded, attaching event listeners...');
+    
+    addBtn.addEventListener('click', addDriver);
+    showBtn.addEventListener('click', getDrivers);
+    deleteBtn.addEventListener('click', deleteDriver);
+    updateBtn.addEventListener('click', updateDriver);
+    
+    // Also load drivers on page load
+    getDrivers();
+  });
+  
+  // Add a new driver
+  async function addDriver() {
+    console.log('Adding driver...');
+    
+    const name = nameInput.value.trim();
+    const team = teamInput.value.trim();
+    const points = parseInt(pointsInput.value) || 0;
+    const wins = parseInt(winsInput.value) || 0;
+    const podiums = parseInt(podiumsInput.value) || 0;
+    
+    console.log('Driver data:', { name, team, points, wins, podiums });
+    
+    if (!name || !team) {
+      alert('Name and team are required!');
+      return;
+    }
+    
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ name, team, points, wins, podiums })
+      });
+      
+      console.log('Response status:', response.status);
+      const result = await response.json();
+      console.log('Response result:', result);
+      
+      if (response.ok && result.success) {
+        alert('Driver added successfully!');
+        // Clear inputs
+        nameInput.value = '';
+        teamInput.value = '';
+        pointsInput.value = '';
+        winsInput.value = '';
+        podiumsInput.value = '';
+        // Refresh the list
+        getDrivers();
+      } else {
+        alert('Error: ' + (result.error || 'Failed to add driver'));
+      }
+    } catch (error) {
+      console.error('Error adding driver:', error);
+      alert('Failed to add driver. Please try again.');
+    }
+  }
+  
+  // Get all drivers
+  async function getDrivers() {
+    console.log('Getting drivers...');
+    
+    try {
+      const response = await fetch(API_URL);
+      console.log('Response status:', response.status);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const drivers = await response.json();
+      console.log('Drivers data:', drivers);
+      
+      if (!drivers || drivers.length === 0) {
+        driversList.innerHTML = '<li>No drivers found</li>';
+        return;
+      }
+      
+      // Clear the list
+      driversList.innerHTML = '';
+      
+      // Add each driver to the list
+      drivers.forEach(driver => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <strong>${driver.name}</strong> (${driver.team})<br>
+          Points: ${driver.points} | Wins: ${driver.wins} | Podiums: ${driver.podiums}<br>
+          ID: ${driver.id}
+        `;
+        driversList.appendChild(li);
+      });
+      
+    } catch (error) {
+      console.error('Error getting drivers:', error);
+      driversList.innerHTML = '<li style="color: red;">Failed to load drivers. Check console for details.</li>';
+    }
+  }
+  
+  // Delete a driver
+  async function deleteDriver() {
+    const id = deleteIdInput.value.trim();
+    
+    if (!id) {
+      alert('Please enter a driver ID');
+      return;
+    }
+    
+    if (!confirm('Are you sure you want to delete this driver?')) {
+      return;
+    }
+    
+    try {
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: 'DELETE'
+      });
+      
+      const result = await response.json();
+      
+      if (response.ok && result.success) {
+        alert('Driver deleted successfully!');
+        deleteIdInput.value = '';
+        // Refresh the list
+        getDrivers();
+      } else {
+        alert('Error: ' + (result.error || 'Failed to delete driver'));
+      }
+    } catch (error) {
+      console.error('Error deleting driver:', error);
+      alert('Failed to delete driver. Please try again.');
+    }
+  }
+  
+  // Update a driver's points
+  async function updateDriver() {
+    const id = updateIdInput.value.trim();
+    const points = parseInt(updatePointsInput.value);
+    
+    if (!id || isNaN(points)) {
+      alert('Please enter a valid ID and points value');
+      return;
+    }
+    
+    try {
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ points })
+      });
+      
+      const result = await response.json();
+      
+      if (response.ok && result.success) {
+        alert('Driver updated successfully!');
+        updateIdInput.value = '';
+        updatePointsInput.value = '';
+        // Refresh the list
+        getDrivers();
+      } else {
+        alert('Error: ' + (result.error || 'Failed to update driver'));
+      }
+    } catch (error) {
+      console.error('Error updating driver:', error);
+      alert('Failed to update driver. Please try again.');
+    }
+  }
+</script>
+</body>
+</html>

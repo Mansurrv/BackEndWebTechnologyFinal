@@ -1,0 +1,33 @@
+@import url('https://fonts.googleapis.com/css2?family=Inika:wght@400;700&family=Inspiration&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+* {
+    margin: 100px;
+    padding: 100px;
+    box-sizing: border-box;
+}
+
+header {
+    text-align: center;
+    padding: 30px
+}
+
+header .page-title {
+    font-family: "Inika", cursive;
+    font-weight: 400;
+    font-size: 50px;
+    font-style: bold;
+}
+
+header .page-subtitle {
+    font-family: 'Inika', sans-serif;
+    font-size: medium;
+}
+
+.padd{
+    padding: 20px;
+    margin: 20px;
+}
+
+.hr{
+    color: white;
+}

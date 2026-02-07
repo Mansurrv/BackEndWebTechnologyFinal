@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F1Tracker - Register</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Racing+Sans+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="https://cdn-icons-png.flaticon.com/512/1995/1995515.png">
+    <style>
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+        
+        .auth-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 1px solid var(--border-color);
+        }
+        
+        .auth-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .auth-header h1 {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: var(--text-primary);
+            font-family: 'Racing Sans One', sans-serif;
+            margin-bottom: 10px;
+        }
+        
+        .auth-header p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+        
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .form-group label {
+            color: var(--text-primary);
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        .form-group input {
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            background: var(--bg-light);
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(220, 0, 0, 0.1);
+        }
+        
+        .auth-btn {
+            padding: 14px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .auth-btn:hover {
+            background: #b30000;
+            transform: translateY(-2px);
+        }
+        
+        .auth-links {
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .auth-links a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        
+        .auth-links a:hover {
+            text-decoration: underline;
+        }
+        
+        .error-message {
+            background: rgba(220, 53, 69, 0.1);
+            border: 1px solid rgba(220, 53, 69, 0.3);
+            color: #dc3545;
+            padding: 10px 15px;
+            border-radius: var(--radius);
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .error-message.show {
+            display: block;
+        }
+        
+        .success-message {
+            background: rgba(25, 135, 84, 0.1);
+            border: 1px solid rgba(25, 135, 84, 0.3);
+            color: #198754;
+            padding: 10px 15px;
+            border-radius: var(--radius);
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .success-message.show {
+            display: block;
+        }
+        
+        .password-requirements {
+            background: var(--bg-light);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 15px;
+            margin-top: 5px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        
+        .password-requirements ul {
+            margin: 5px 0;
+            padding-left: 20px;
+        }
+        
+        .password-requirements li {
+            margin-bottom: 5px;
+        }
+        
+        @media (max-width: 480px) {
+            .auth-card {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body class="dark-mode">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1>
+                    <i class="fas fa-flag-checkered"></i>
+                    F1Tracker
+                </h1>
+                <p>Create your account for personalized F1 experience</p>
+            </div>
+            
+            <% if (error) { %>
+            <div class="error-message show">
+                <i class="fas fa-exclamation-circle"></i> <%= error %>
+            </div>
+            <% } %>
+            
+            <% if (success) { %>
+            <div class="success-message show">
+                <i class="fas fa-check-circle"></i> <%= success %>
+            </div>
+            <% } %>
+            
+            <form class="auth-form" action="/register" method="POST" onsubmit="return validateForm()">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required placeholder="Choose a username">
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" required placeholder="Enter your email">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required 
+                           placeholder="Create a password" 
+                           oninput="validatePassword()">
+                    <div class="password-requirements">
+                        <strong>Password must contain:</strong>
+                        <ul>
+                            <li id="length" class="invalid">At least 8 characters</li>
+                            <li id="uppercase" class="invalid">One uppercase letter</li>
+                            <li id="lowercase" class="invalid">One lowercase letter</li>
+                            <li id="number" class="invalid">One number</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" required 
+                           placeholder="Confirm your password">
+                    <div id="passwordMatch" style="display:none; color:#dc3545; font-size:0.85rem; margin-top:5px;">
+                        Passwords do not match
+                    </div>
+                </div>
+                
+                <button type="submit" class="auth-btn">
+                    <i class="fas fa-user-plus"></i>
+                    Create Account
+                </button>
+            </form>
+            
+            <div class="auth-links">
+                <p>Already have an account? <a href="/login">Login here</a></p>
+                <p><a href="/">← Back to Home</a></p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Password validation
+        function validatePassword() {
+            const password = document.getElementById('password').value;
+            const requirements = {
+                length: password.length >= 8,
+                uppercase: /[A-Z]/.test(password),
+                lowercase: /[a-z]/.test(password),
+                number: /[0-9]/.test(password)
+            };
+            
+            // Update requirement indicators
+            Object.keys(requirements).forEach(key => {
+                const element = document.getElementById(key);
+                if (requirements[key]) {
+                    element.classList.remove('invalid');
+                    element.classList.add('valid');
+                } else {
+                    element.classList.remove('valid');
+                    element.classList.add('invalid');
+                }
+            });
+            
+            // Check password match
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const matchMessage = document.getElementById('passwordMatch');
+            if (confirmPassword && password !== confirmPassword) {
+                matchMessage.style.display = 'block';
+            } else {
+                matchMessage.style.display = 'none';
+            }
+        }
+        
+        function validateForm() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            // Check password requirements
+            if (password.length < 8 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
+                alert('Password does not meet all requirements');
+                return false;
+            }
+            
+            // Check password match
+            if (password !== confirmPassword) {
+                alert('Passwords do not match');
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // Check for theme preference
+        const currentTheme = localStorage.getItem('theme');
+        if (currentTheme === 'light') {
+            document.body.classList.remove('dark-mode');
+        }
+        
+        // Add CSS for validation indicators
+        const style = document.createElement('style');
+        style.textContent = `
+            .valid { color: #198754 !important; }
+            .invalid { color: #dc3545 !important; }
+            .valid::before { content: "✓ "; }
+            .invalid::before { content: "✗ "; }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
