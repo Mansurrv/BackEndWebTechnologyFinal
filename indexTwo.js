@@ -225,6 +225,16 @@ function isAuthenticated(req, res, next) {
   res.redirect('/');
 }
 
+function isAuthenticatedApi(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  return res.status(401).json({
+    success: false,
+    message: 'Authentication required'
+  });
+}
+
 function isAdmin(req, res, next) {
   if (req.isAuthenticated() && req.user.role === 'admin') {
     return next();
@@ -405,6 +415,12 @@ app.post('/profile', isAuthenticated, async (req, res) => {
 app.get('/drivers/ver', (req, res) => res.render('ver', { user: req.user || null }));
 app.get('/drivers/nor', (req, res) => res.render('lando', { user: req.user || null }));
 app.get('/drivers/pia', (req, res) => res.render('piastri', { user: req.user || null }));
+
+// ================= API Protection =================
+app.use('/api', (req, res, next) => {
+  if (req.path === '/auth/status') return next();
+  return isAuthenticatedApi(req, res, next);
+});
 
 if (!process.env.MONGODB_URI) {
   console.error('❌ Missing MONGODB_URI env var. Set it in .env (local) or Render Environment.');
