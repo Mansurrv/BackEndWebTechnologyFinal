@@ -13,165 +13,8 @@
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="logo">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/F1.svg/1200px-F1.svg.png" 
-                    alt="F1 Logo" 
-                    class="logo-img">
-                <span>F1Tracker</span>
-            </div>
-            <ul class="nav-links">
-                <li><a href="#home">Home</a></li>
-                <li><a href="/constructorsPage">Constructors</a></li>
-                <li><a href="/driversPage">Drivers</a></li>
-                <li><a href="#team">Team</a></li>
-                <li><a href="#features">Features</a></li>
-                <li><a href="contact">Contact</a></li>
-                <li><a href="/sqll">Datas</a></li>
-                <li><a href="mongo">MongoDB</a></li>
-                <li><a href="add">Add</a></li>
-                
-                <!-- User Status -->
-                <li id="userStatus" style="<%= user ? '' : 'display: none;' %>">
-                    <div class="user-menu">
-                        <a href="/dashboard" class="user-welcome">
-                            <i class="fas fa-user"></i>
-                            <span id="usernameDisplay"><%= user ? user.username : '' %></span>
-                        </a>
-                        <div class="dropdown-menu">
-                            <a href="/dashboard" class="dropdown-item">
-                                <i class="fas fa-id-badge"></i> Profile
-                            </a>
-                            <a href="#" class="dropdown-item" id="logoutBtn">
-                                <i class="fas fa-sign-out-alt"></i> Logout
-                            </a>
-                        </div>
-                    </div>
-                </li>
-                
-                <!-- Auth Buttons - Show when user is not logged in -->
-                <li id="authButtons" style="<%= user ? 'display: none;' : '' %>">
-                    <button class="btn-outline btn-small" id="loginBtn">
-                        <i class="fas fa-sign-in-alt"></i> Login
-                    </button>
-                    <button class="btn-primary btn-small" id="registerBtn">
-                        <i class="fas fa-user-plus"></i> Register
-                    </button>
-                </li>
-                
-                <li class="theme-toggle">
-                    <button class="theme-toggle-btn" id="themeToggle" aria-label="Toggle dark mode">
-                        <div class="toggle-slider">
-                            <i class="fas fa-sun"></i>
-                        </div>
-                        <span class="theme-icon sun-icon">
-                            <i class="fas fa-sun"></i>
-                        </span>
-                        <span class="theme-icon moon-icon">
-                            <i class="fas fa-moon"></i>
-                        </span>
-                    </button>
-                </li>
-            </ul>
-            <button class="mobile-menu-btn">
-                <i class="fas fa-bars"></i>
-            </button>
-        </div>
-    </nav>
-
-    <!-- Login Modal -->
-    <div class="modal" id="loginModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>
-                    <i class="fas fa-flag-checkered"></i>
-                    Login to F1Tracker
-                </h2>
-                <button class="modal-close" id="closeLoginModal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="error-message" id="loginError" style="display: none;"></div>
-                <div class="success-message" id="loginSuccess" style="display: none;"></div>
-                
-                <form id="loginForm">
-                    <div class="form-group">
-                        <label for="loginEmail">Email Address</label>
-                        <input type="email" id="loginEmail" required placeholder="Enter your email">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="loginPassword">Password</label>
-                        <input type="password" id="loginPassword" required placeholder="Enter your password">
-                    </div>
-                    
-                    <button type="submit" class="btn-primary btn-block">
-                        <i class="fas fa-sign-in-alt"></i> Login
-                    </button>
-                </form>
-                
-                <div class="auth-links">
-                    <p>Don't have an account? <a href="#" id="showRegisterFromLogin">Register here</a></p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Register Modal -->
-    <div class="modal" id="registerModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>
-                    <i class="fas fa-flag-checkered"></i>
-                    Join F1Tracker
-                </h2>
-                <button class="modal-close" id="closeRegisterModal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="error-message" id="registerError" style="display: none;"></div>
-                <div class="success-message" id="registerSuccess" style="display: none;"></div>
-                
-                <form id="registerForm">
-                    <div class="form-group">
-                        <label for="registerUsername">Username</label>
-                        <input type="text" id="registerUsername" required placeholder="Choose a username">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="registerEmail">Email Address</label>
-                        <input type="email" id="registerEmail" required placeholder="Enter your email">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="registerPassword">Password</label>
-                        <input type="password" id="registerPassword" required 
-                            placeholder="Create a password"
-                            oninput="validateRegisterPassword()">
-                        <div class="password-hint">
-                            Must be at least 8 characters with uppercase, lowercase, and number
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="registerConfirmPassword">Confirm Password</label>
-                        <input type="password" id="registerConfirmPassword" required 
-                            placeholder="Confirm your password">
-                        <div id="passwordMatchMessage" class="password-hint" style="display: none; color: #dc3545;">
-                            Passwords do not match
-                        </div>
-                    </div>
-                    
-                    <button type="submit" class="btn-primary btn-block">
-                        <i class="fas fa-user-plus"></i> Create Account
-                    </button>
-                </form>
-                
-                <div class="auth-links">
-                    <p>Already have an account? <a href="#" id="showLoginFromRegister">Login here</a></p>
-                </div>
-            </div>
-        </div>
-    </div>
+    <%- include('partials/navbar', { user }) %>
+    <%- include('partials/auth-modals') %>
 
     <!-- Hero Section -->
     <header class="hero" id="home">
@@ -594,31 +437,6 @@
     </button>
 
     <script>
-        // Dark Mode Toggle
-        const themeToggle = document.getElementById('themeToggle');
-        const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
-
-        // Check for saved theme or prefer color scheme
-        const currentTheme = localStorage.getItem('theme');
-        if (currentTheme === 'dark' || (!currentTheme && prefersDarkScheme.matches)) {
-            document.body.classList.add('dark-mode');
-        }
-
-        // Toggle theme
-        themeToggle.addEventListener('click', function() {
-            document.body.classList.toggle('dark-mode');
-            
-            // Save preference to localStorage
-            const theme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
-            localStorage.setItem('theme', theme);
-            
-            // Add animation effect
-            this.style.transform = 'scale(0.9)';
-            setTimeout(() => {
-                this.style.transform = 'scale(1)';
-            }, 150);
-        });
-
         // Update scroll button display
         window.addEventListener('scroll', () => {
             const scrollBtn = document.querySelector('.scroll-top-btn');
@@ -627,10 +445,6 @@
             } else {
                 scrollBtn.classList.remove('show');
             }
-        });
-        // Mobile Menu
-        document.querySelector('.mobile-menu-btn').addEventListener('click', function() {
-            document.querySelector('.nav-links').classList.toggle('active');
         });
 
         // Scroll to Top Button
@@ -682,7 +496,8 @@
             observer.observe(section);
         });
     </script>
-
+    <script src="/js/theme.js"></script>
+    <script src="/js/nav.js"></script>
     <script src="/js/auth.js"></script>
 
 </body>

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>F1Tracker - Register</title>
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/page.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Racing+Sans+One&display=swap" rel="stylesheet">
@@ -12,7 +13,7 @@
     <link rel="icon" type="image/x-icon" href="https://cdn-icons-png.flaticon.com/512/1995/1995515.png">
     <style>
         .auth-container {
-            min-height: 100vh;
+            min-height: calc(100vh - 90px);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -41,7 +42,7 @@
             justify-content: center;
             gap: 10px;
             color: var(--text-primary);
-            font-family: 'Racing Sans One', sans-serif;
+            font-family: 'Poppins', sans-serif;
             margin-bottom: 10px;
         }
         
@@ -180,7 +181,8 @@
         }
     </style>
 </head>
-<body class="dark-mode">
+<body class="page-body">
+    <%- include('partials/navbar', { user }) %>
     <div class="auth-container">
         <div class="auth-card">
             <div class="auth-header">
@@ -304,12 +306,6 @@
             return true;
         }
         
-        // Check for theme preference
-        const currentTheme = localStorage.getItem('theme');
-        if (currentTheme === 'light') {
-            document.body.classList.remove('dark-mode');
-        }
-        
         // Add CSS for validation indicators
         const style = document.createElement('style');
         style.textContent = `
@@ -320,5 +316,9 @@
         `;
         document.head.appendChild(style);
     </script>
+    <%- include('partials/auth-modals') %>
+    <script src="/js/theme.js"></script>
+    <script src="/js/nav.js"></script>
+    <script src="/js/auth.js"></script>
 </body>
 </html>

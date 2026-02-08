@@ -5,26 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>F1Tracker - Dashboard</title>
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/page.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .dashboard-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
+            padding: 10px 0 40px;
         }
         
         .welcome-card {
-            background: linear-gradient(135deg, #dc0000 0%, #b30000 100%);
+            background: linear-gradient(135deg, var(--primary-color) 0%, #b30000 100%);
             color: white;
             padding: 40px;
-            border-radius: 10px;
+            border-radius: 12px;
             text-align: center;
             margin-bottom: 30px;
+            box-shadow: var(--shadow);
         }
         
         .welcome-card h1 {
             margin: 0;
-            font-size: 2.5rem;
+            font-size: 2.3rem;
         }
         
         .welcome-card p {
@@ -34,22 +34,23 @@
         
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 20px;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
         }
         
         .stat-card {
-            background: white;
+            background: var(--card-bg);
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow);
             text-align: center;
+            border: 1px solid var(--border-color);
         }
         
         .stat-card i {
             font-size: 2rem;
-            color: #dc0000;
+            color: var(--primary-color);
             margin-bottom: 15px;
         }
         
@@ -57,113 +58,185 @@
             font-size: 2rem;
             font-weight: bold;
             margin: 10px 0;
+            color: var(--text-color);
         }
         
         .stat-label {
-            color: #666;
+            color: var(--text-light);
             font-size: 0.9rem;
+        }
+
+        .account-card,
+        .profile-card,
+        .notifications-card {
+            margin-top: 30px;
+        }
+
+        .account-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+        }
+
+        .account-details p {
+            margin: 0;
+            color: var(--text-color);
+        }
+
+        .profile-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .profile-form .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+        }
+
+        .profile-form label {
+            display: block;
+            margin-bottom: 6px;
+            color: var(--text-color);
+            font-weight: 500;
+        }
+
+        .profile-form input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            background: var(--bg-light);
+            color: var(--text-color);
+        }
+
+        .notifications-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .notification-item {
+            padding: 12px 14px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            background: var(--bg-light);
+        }
+
+        .notification-item strong {
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .notification-item .meta {
+            color: var(--text-light);
+            font-size: 0.85rem;
+            margin-bottom: 6px;
         }
     </style>
 </head>
-<body>
-    <nav style="background: #1a1a1a; padding: 15px; color: white;">
-        <div style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <i class="fas fa-flag-checkered"></i>
-                <span style="font-weight: bold; font-size: 1.2rem;">F1Tracker</span>
+<body class="page-body">
+    <%- include('partials/navbar', { user }) %>
+
+    <section class="page-content">
+        <div class="container dashboard-container">
+            <% if (message) { %>
+                <div style="max-width: 800px; margin: 0 auto 20px; padding: 12px 16px; border-radius: 8px; background: <%= messageType === 'success' ? '#e8f5e9' : '#fdecea' %>; color: <%= messageType === 'success' ? '#1b5e20' : '#b71c1c' %>; border: 1px solid <%= messageType === 'success' ? '#c8e6c9' : '#f5c6cb' %>;">
+                    <%= message %>
+                </div>
+            <% } %>
+
+            <div class="welcome-card">
+                <h1>Welcome, <%= user.username %>!</h1>
+                <p>Your Formula 1 Dashboard</p>
             </div>
-            <div>
-                <a href="/" style="color: white; margin-right: 15px;">Home</a>
-                <form action="/logout" method="POST" style="display: inline;">
-                    <button type="submit" style="background: #dc0000; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
-                        <i class="fas fa-sign-out-alt"></i> Logout
-                    </button>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <i class="fas fa-trophy"></i>
+                    <div class="stat-value">24</div>
+                    <div class="stat-label">Constructors Viewed</div>
+                </div>
+                
+                <div class="stat-card">
+                    <i class="fas fa-helmet-safety"></i>
+                    <div class="stat-value">15</div>
+                    <div class="stat-label">Drivers Tracked</div>
+                </div>
+                
+                <div class="stat-card">
+                    <i class="fas fa-star"></i>
+                    <div class="stat-value"><%= favoritesCount %></div>
+                    <div class="stat-label">Favorites</div>
+                </div>
+                
+                <div class="stat-card">
+                    <i class="fas fa-calendar-alt"></i>
+                    <div class="stat-value">5</div>
+                    <div class="stat-label">Upcoming Races</div>
+                </div>
+            </div>
+
+            <div class="content-card account-card">
+                <h3>Account Information</h3>
+                <div class="account-details">
+                    <p><strong>Username:</strong> <%= user.username %></p>
+                    <p><strong>Email:</strong> <%= user.email %></p>
+                    <p><strong>Member since:</strong> <%= new Date(user.createdAt).toLocaleDateString() %></p>
+                </div>
+            </div>
+
+            <div class="content-card notifications-card">
+                <h3>Notifications</h3>
+                <div id="notificationsList" class="notifications-list">
+                    <div class="notification-item">Loading notifications...</div>
+                </div>
+            </div>
+
+            <div class="content-card profile-card">
+                <h3 style="text-align: center; margin-bottom: 20px;">Edit Profile</h3>
+                <form action="/profile" method="POST" class="profile-form">
+                    <div class="form-row">
+                        <div>
+                            <label for="profileUsername">Username</label>
+                            <input id="profileUsername" name="username" type="text" value="<%= user.username %>" required>
+                        </div>
+                        <div>
+                            <label for="profileEmail">Email</label>
+                            <input id="profileEmail" name="email" type="email" value="<%= user.email %>" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div>
+                            <label for="currentPassword">Current Password</label>
+                            <input id="currentPassword" name="currentPassword" type="password" placeholder="Required to change password">
+                        </div>
+                        <div>
+                            <label for="newPassword">New Password</label>
+                            <input id="newPassword" name="newPassword" type="password" placeholder="Min 8 characters">
+                        </div>
+                        <div>
+                            <label for="confirmNewPassword">Confirm New Password</label>
+                            <input id="confirmNewPassword" name="confirmNewPassword" type="password" placeholder="Repeat new password">
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 10px;">
+                        <button type="submit" class="btn-primary">Save Changes</button>
+                    </div>
                 </form>
             </div>
         </div>
-    </nav>
+    </section>
 
-    <div class="dashboard-container">
-        <% if (message) { %>
-            <div style="max-width: 800px; margin: 0 auto 20px; padding: 12px 16px; border-radius: 8px; background: <%= messageType === 'success' ? '#e8f5e9' : '#fdecea' %>; color: <%= messageType === 'success' ? '#1b5e20' : '#b71c1c' %>; border: 1px solid <%= messageType === 'success' ? '#c8e6c9' : '#f5c6cb' %>;">
-                <%= message %>
-            </div>
-        <% } %>
+    <%- include('partials/auth-modals') %>
 
-        <div class="welcome-card">
-            <h1>Welcome, <%= user.username %>!</h1>
-            <p>Your Formula 1 Dashboard</p>
-        </div>
-
-        <div class="stats-grid">
-            <div class="stat-card">
-                <i class="fas fa-trophy"></i>
-                <div class="stat-value">24</div>
-                <div class="stat-label">Constructors Viewed</div>
-            </div>
-            
-            <div class="stat-card">
-                <i class="fas fa-helmet-safety"></i>
-                <div class="stat-value">15</div>
-                <div class="stat-label">Drivers Tracked</div>
-            </div>
-            
-            <div class="stat-card">
-                <i class="fas fa-star"></i>
-                <div class="stat-value"><%= favoritesCount %></div>
-                <div class="stat-label">Favorites</div>
-            </div>
-            
-            <div class="stat-card">
-                <i class="fas fa-calendar-alt"></i>
-                <div class="stat-value">5</div>
-                <div class="stat-label">Upcoming Races</div>
-            </div>
-        </div>
-
-        <div style="text-align: center; margin-top: 40px; padding: 20px; background: #f5f5f5; border-radius: 10px;">
-            <h3>Account Information</h3>
-            <p><strong>Username:</strong> <%= user.username %></p>
-            <p><strong>Email:</strong> <%= user.email %></p>
-            <p><strong>Member since:</strong> <%= new Date(user.createdAt).toLocaleDateString() %></p>
-        </div>
-
-        <div style="max-width: 800px; margin: 30px auto 0; padding: 20px; background: #ffffff; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
-            <h3 style="text-align: center; margin-bottom: 20px;">Edit Profile</h3>
-            <form action="/profile" method="POST">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <div>
-                        <label for="profileUsername" style="display:block; margin-bottom:6px;">Username</label>
-                        <input id="profileUsername" name="username" type="text" value="<%= user.username %>" required style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
-                    </div>
-                    <div>
-                        <label for="profileEmail" style="display:block; margin-bottom:6px;">Email</label>
-                        <input id="profileEmail" name="email" type="email" value="<%= user.email %>" required style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
-                    </div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-top: 15px;">
-                    <div>
-                        <label for="currentPassword" style="display:block; margin-bottom:6px;">Current Password</label>
-                        <input id="currentPassword" name="currentPassword" type="password" placeholder="Required to change password" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
-                    </div>
-                    <div>
-                        <label for="newPassword" style="display:block; margin-bottom:6px;">New Password</label>
-                        <input id="newPassword" name="newPassword" type="password" placeholder="Min 8 characters" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
-                    </div>
-                    <div>
-                        <label for="confirmNewPassword" style="display:block; margin-bottom:6px;">Confirm New Password</label>
-                        <input id="confirmNewPassword" name="confirmNewPassword" type="password" placeholder="Repeat new password" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
-                    </div>
-                </div>
-
-                <div style="text-align: center; margin-top: 20px;">
-                    <button type="submit" style="background:#dc0000; color:#fff; border:none; padding:10px 20px; border-radius:6px; cursor:pointer;">
-                        Save Changes
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+    <script src="/js/notifications.js"></script>
+    <script src="/js/theme.js"></script>
+    <script src="/js/nav.js"></script>
+    <script src="/js/auth.js"></script>
 </body>
 </html>

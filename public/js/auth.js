@@ -14,6 +14,12 @@ const authButtons = document.getElementById('authButtons');
 const usernameDisplay = document.getElementById('usernameDisplay');
 const logoutBtn = document.getElementById('logoutBtn');
 
+const adminNavLinks = [
+    { href: '/admin', label: 'Admin' },
+    { href: '/sqll', label: 'Datas' },
+    { href: '/add', label: 'Add' }
+];
+
 // Check if user is logged in on page load
 document.addEventListener('DOMContentLoaded', () => {
     checkAuthStatus();
@@ -149,6 +155,7 @@ function showUserStatus(user) {
         if (usernameDisplay) {
             usernameDisplay.textContent = user.username;
         }
+        syncAdminNavLinks(user);
         updateMobileMenuForLoggedInUser(user);
     }
 }
@@ -158,8 +165,33 @@ function showAuthButtons() {
     if (userStatus && authButtons) {
         userStatus.style.display = 'none';
         authButtons.style.display = 'flex';
+        syncAdminNavLinks(null);
         updateMobileMenuForLoggedOutUser();
     }
+}
+
+function syncAdminNavLinks(user) {
+    const navLinks = document.querySelector('.nav-links');
+    if (!navLinks) return;
+
+    navLinks.querySelectorAll('.admin-only').forEach((item) => item.remove());
+
+    if (!user || user.role !== 'admin') return;
+
+    const mongoLink = navLinks.querySelector('a[href="/mongo"], a[href="mongo"]');
+    const mongoItem = mongoLink ? mongoLink.closest('li') : null;
+    const insertBeforeNode = mongoItem ? mongoItem.nextElementSibling : navLinks.querySelector('.theme-toggle');
+
+    adminNavLinks.forEach((link) => {
+        const li = document.createElement('li');
+        li.className = 'admin-only';
+        li.innerHTML = `<a href="${link.href}">${link.label}</a>`;
+        if (insertBeforeNode) {
+            navLinks.insertBefore(li, insertBeforeNode);
+        } else {
+            navLinks.appendChild(li);
+        }
+    });
 }
 
 // Update mobile menu for logged in user

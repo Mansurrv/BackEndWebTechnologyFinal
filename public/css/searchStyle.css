@@ -1,26 +1,29 @@
 /* Search Results Styles */
+.search-section {
+  position: relative;
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto 30px;
+}
+
 .results {
   display: none;
   position: absolute;
-  top: 160px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  max-width: 600px;
+  top: 60px;
+  left: 0;
+  width: 100%;
   max-height: 400px;
   overflow-y: auto;
   background: white;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   z-index: 1000;
-  margin-top: 10px;
 }
 
 .searchh {
   position: relative;
-  width: 90%;
-  max-width: 600px;
-  margin: 20px auto;
+  width: 100%;
+  margin: 0;
 }
 
 .search-result-item {

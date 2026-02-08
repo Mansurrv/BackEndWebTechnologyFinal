@@ -14,6 +14,13 @@ require('dotenv').config();
 console.log('Environment loaded. PORT:', process.env.PORT);
 console.log('MongoDB URI:', process.env.MONGODB_URI ? 'Set' : 'Not set');
 
+const requiredEnv = ['SESSION_SECRET', 'MONGODB_URI'];
+const missingEnv = requiredEnv.filter((key) => !process.env[key]);
+if (missingEnv.length) {
+  console.error(`❌ Missing required env vars: ${missingEnv.join(', ')}`);
+  process.exit(1);
+}
+
 app.use(express.static('public'));
 app.set('view engine', 'ejs');
 app.use(cors({ origin: true, credentials: true }));
@@ -33,32 +40,26 @@ app.use((req, res, next) => {
   next();
 });
 
-let sessionStore;
-if (process.env.MONGODB_URI) {
-  sessionStore = new MongoDBStore({
-    uri: process.env.MONGODB_URI,
-    collection: 'sessions',
-    connectionOptions: {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    }
-  });
+const sessionStore = new MongoDBStore({
+  uri: process.env.MONGODB_URI,
+  collection: 'sessions',
+  connectionOptions: {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  }
+});
 
-  sessionStore.on('error', function(error) {
-    console.error('Session store error:', error);
-  });
-} else {
-  console.warn('⚠️  MONGODB_URI not set. Using in-memory session store (not for production).');
-}
+sessionStore.on('error', function(error) {
+  console.error('Session store error:', error);
+});
 
-const isProd = process.env.NODE_ENV === 'production';
 const cookieSecure = process.env.COOKIE_SECURE === 'true';
 if (cookieSecure) {
   app.set('trust proxy', 1);
 }
 
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'f1tracker-secret-key-2024',
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   store: sessionStore,
@@ -72,6 +73,11 @@ app.use(session({
 
 app.use(passport.initialize());
 app.use(passport.session());
+
+app.use((req, res, next) => {
+  res.locals.user = req.user || null;
+  next();
+});
 
 const SchemaContact = new mongoose.Schema({
   name: String,
@@ -97,6 +103,10 @@ const Constructor = mongoose.model('Constructor', SchemaConstructor);
 const SchemaDriver = new mongoose.Schema({
   name: String,
   team: String,
+  constructor: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Constructor'
+  },
   nationality: String,
   points: Number,
   wins: Number,
@@ -142,6 +152,10 @@ const userSchema = new mongoose.Schema({
     enum: ['user', 'admin'],
     default: 'user'
   },
+  isActive: {
+    type: Boolean,
+    default: true
+  },
   createdAt: {
     type: Date,
     default: Date.now
@@ -178,6 +192,14 @@ userSchema.methods.comparePassword = function(candidatePassword) {
 
 const User = mongoose.model('User', userSchema);
 
+const notificationSchema = new mongoose.Schema({
+  title: { type: String, required: true, trim: true },
+  message: { type: String, required: true, trim: true },
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  createdAt: { type: Date, default: Date.now }
+});
+const Notification = mongoose.model('Notification', notificationSchema);
+
 passport.use(new LocalStrategy({
   usernameField: 'email',
   passwordField: 'password'
@@ -187,6 +209,10 @@ passport.use(new LocalStrategy({
     
     if (!user) {
       return done(null, false, { message: 'Invalid email or password' });
+    }
+
+    if (user.isActive === false) {
+      return done(null, false, { message: 'Account is disabled. Contact admin.' });
     }
     
     const isMatch = await user.comparePassword(password);
@@ -242,6 +268,45 @@ function isAdmin(req, res, next) {
   res.status(403).send('Access denied');
 }
 
+function requireAdminApi(req, res, next) {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({
+      success: false,
+      message: 'Authentication required'
+    });
+  }
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({
+      success: false,
+      message: 'Admin access required'
+    });
+  }
+  return next();
+}
+
+function requireValidObjectId(req, res, next) {
+  if (!mongoose.isValidObjectId(req.params.id)) {
+    return res.status(400).json({
+      success: false,
+      error: 'Invalid id'
+    });
+  }
+  return next();
+}
+
+const DEFAULT_PAGE_LIMIT = 20;
+const MAX_PAGE_LIMIT = 100;
+
+function getPaginationParams(query) {
+  const page = Math.max(parseInt(query.page, 10) || 1, 1);
+  const limit = Math.min(
+    Math.max(parseInt(query.limit, 10) || DEFAULT_PAGE_LIMIT, 1),
+    MAX_PAGE_LIMIT
+  );
+  const skip = (page - 1) * limit;
+  return { page, limit, skip };
+}
+
 app.get('/', (req, res) => {
   console.log('User in session:', req.user ? req.user.username : 'No user');
   res.render('index', { user: req.user || null });
@@ -250,10 +315,11 @@ app.get('/', (req, res) => {
 app.get('/constructorsPage', (req, res) => res.render('constructorsPage', { user: req.user || null }));
 app.get('/driversPage', (req, res) => res.render('driversPage', { user: req.user || null }));
 app.get('/contact', (req, res) => res.render('contact', { user: req.user || null }));
-app.get('/add', (req, res) => res.render('add', { user: req.user || null }));
+app.get('/add', isAdmin, (req, res) => res.render('add', { user: req.user || null }));
 app.get('/mongo', (req, res) => res.render('filters', { user: req.user || null }));
-app.get('/sqll', (req, res) => res.render('sqll', { user: req.user || null }));
-app.get('/constructor-manager', (req, res) => res.render('constructor-manager', { user: req.user || null }));
+app.get('/sqll', isAdmin, (req, res) => res.render('sqll', { user: req.user || null }));
+app.get('/constructor-manager', isAdmin, (req, res) => res.render('constructor-manager', { user: req.user || null }));
+app.get('/admin', isAdmin, (req, res) => res.render('admin', { user: req.user || null }));
 
 app.get('/login', (req, res) => {
   return res.redirect('/');
@@ -419,19 +485,19 @@ app.get('/drivers/pia', (req, res) => res.render('piastri', { user: req.user || 
 // ================= API Protection =================
 app.use('/api', (req, res, next) => {
   if (req.path === '/auth/status') return next();
+  const isWrite = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method);
+  if (!isWrite) return next();
   return isAuthenticatedApi(req, res, next);
 });
 
-if (!process.env.MONGODB_URI) {
-  console.error('❌ Missing MONGODB_URI env var. Set it in .env (local) or Render Environment.');
-} else {
-  mongoose.connect(process.env.MONGODB_URI)
-    .then(() => {
-      console.log('✅ MongoDB connected');
-      seedData();
-    })
-    .catch(err => console.error('❌ MongoDB error:', err));
-}
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => {
+    console.log('✅ MongoDB connected');
+    ensureAdminUser()
+      .then(() => seedData())
+      .catch((err) => console.error('❌ Admin seed error:', err));
+  })
+  .catch(err => console.error('❌ MongoDB error:', err));
 
 async function seedData() {
   try {
@@ -452,6 +518,9 @@ async function seedData() {
       console.log(`✅ Found ${constructorCount} constructors in DB`);
     }
 
+    const constructors = await Constructor.find();
+    const constructorByTeam = new Map(constructors.map((c) => [c.team, c._id]));
+
     const driverCount = await Driver.countDocuments();
     if (driverCount === 0) {
       console.log('Seeding initial drivers data...');
@@ -459,6 +528,7 @@ async function seedData() {
         { 
           name: 'Max Verstappen', 
           team: 'Red Bull Racing', 
+          constructor: constructorByTeam.get('Red Bull Racing'),
           nationality: 'Dutch', 
           points: 395, 
           wins: 14, 
@@ -472,6 +542,7 @@ async function seedData() {
         { 
           name: 'Lando Norris', 
           team: 'McLaren', 
+          constructor: constructorByTeam.get('McLaren'),
           nationality: 'British', 
           points: 285, 
           wins: 2, 
@@ -485,6 +556,7 @@ async function seedData() {
         { 
           name: 'Charles Leclerc', 
           team: 'Ferrari', 
+          constructor: constructorByTeam.get('Ferrari'),
           nationality: 'Monegasque', 
           points: 252, 
           wins: 2, 
@@ -498,6 +570,7 @@ async function seedData() {
         { 
           name: 'Sergio Perez', 
           team: 'Red Bull Racing', 
+          constructor: constructorByTeam.get('Red Bull Racing'),
           nationality: 'Mexican', 
           points: 229, 
           wins: 2, 
@@ -511,6 +584,7 @@ async function seedData() {
         { 
           name: 'Oscar Piastri', 
           team: 'McLaren', 
+          constructor: constructorByTeam.get('McLaren'),
           nationality: 'Australian', 
           points: 197, 
           wins: 1, 
@@ -527,19 +601,17 @@ async function seedData() {
     } else {
       console.log(`✅ Found ${driverCount} drivers in DB`);
     }
-    
 
-    const adminUser = await User.findOne({ email: 'admin@f1tracker.com' });
-    if (!adminUser) {
-      console.log('Creating admin user...');
-      const admin = new User({
-        username: 'admin',
-        email: 'admin@f1tracker.com',
-        password: 'Admin123!',
-        role: 'admin'
-      });
-      await admin.save();
-      console.log('✅ Admin user created');
+    const driversMissingConstructor = await Driver.find({ constructor: { $exists: false } });
+    if (driversMissingConstructor.length) {
+      console.log('Linking drivers to constructors...');
+      for (const driver of driversMissingConstructor) {
+        const constructorId = constructorByTeam.get(driver.team);
+        if (constructorId) {
+          driver.constructor = constructorId;
+          await driver.save();
+        }
+      }
     }
     
   } catch (err) {
@@ -547,7 +619,67 @@ async function seedData() {
   }
 }
 
-app.post('/send-data', async (req, res) => {
+async function ensureAdminUser() {
+  const adminEmail = process.env.ADMIN_EMAIL;
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  const adminUsername = process.env.ADMIN_USERNAME || 'admin';
+
+  if (!adminEmail || !adminPassword) {
+    console.log('ℹ️  ADMIN_EMAIL/ADMIN_PASSWORD not set. Skipping admin seed.');
+    return;
+  }
+
+  const normalizedEmail = adminEmail.toLowerCase();
+  const adminUser = await User.findOne({
+    $or: [
+      { email: normalizedEmail },
+      { username: adminUsername }
+    ]
+  });
+
+  if (!adminUser) {
+    console.log('Creating admin user...');
+    const admin = new User({
+      username: adminUsername,
+      email: normalizedEmail,
+      password: adminPassword,
+      role: 'admin'
+    });
+    await admin.save();
+    console.log('✅ Admin user created');
+    return;
+  }
+
+  let needsSave = false;
+  if (adminUser.role !== 'admin') {
+    adminUser.role = 'admin';
+    needsSave = true;
+  }
+  if (adminUsername && adminUser.username !== adminUsername) {
+    adminUser.username = adminUsername;
+    needsSave = true;
+  }
+  if (adminUser.email !== normalizedEmail) {
+    const emailOwner = await User.findOne({ email: normalizedEmail });
+    if (!emailOwner || emailOwner._id.toString() === adminUser._id.toString()) {
+      adminUser.email = normalizedEmail;
+      needsSave = true;
+    } else {
+      console.warn('⚠️  ADMIN_EMAIL is already used by another account. Skipping email update.');
+    }
+  }
+  const passwordMatches = await adminUser.comparePassword(adminPassword).catch(() => false);
+  if (!passwordMatches) {
+    adminUser.password = adminPassword;
+    needsSave = true;
+  }
+  if (needsSave) {
+    await adminUser.save();
+    console.log('✅ Admin user updated from environment settings');
+  }
+}
+
+app.post('/send-data', isAuthenticatedApi, async (req, res) => {
   try {
     const contact = new Contact({
       name: req.body.name,
@@ -586,11 +718,22 @@ app.get('/api/constructors', async (req, res) => {
     let projection = null;
     if (fields) projection = fields.split(',').join(' ');
     
-    const constructors = await Constructor.find(filter, projection).sort({ position: 1 });
+    const { page, limit, skip } = getPaginationParams(req.query);
+    const [total, constructors] = await Promise.all([
+      Constructor.countDocuments(filter),
+      Constructor.find(filter, projection)
+        .sort({ position: 1 })
+        .skip(skip)
+        .limit(limit)
+    ]);
     
     res.json({ 
       success: true,
-      count: constructors.length, 
+      page,
+      limit,
+      total,
+      pages: Math.ceil(total / limit),
+      count: constructors.length,
       data: constructors 
     });
   } catch (err) {
@@ -601,7 +744,7 @@ app.get('/api/constructors', async (req, res) => {
   }
 });
 
-app.get('/api/constructors/:id', async (req, res) => {
+app.get('/api/constructors/:id', requireValidObjectId, async (req, res) => {
   try {
     const constructor = await Constructor.findById(req.params.id);
     if (!constructor) {
@@ -622,7 +765,7 @@ app.get('/api/constructors/:id', async (req, res) => {
   }
 });
 
-app.post('/api/constructors', async (req, res) => {
+app.post('/api/constructors', requireAdminApi, async (req, res) => {
   try {
     const { position, team, color, drivers, points, wins, podiums, season } = req.body;
     
@@ -659,7 +802,7 @@ app.post('/api/constructors', async (req, res) => {
   }
 });
 
-app.put('/api/constructors/:id', async (req, res) => {
+app.put('/api/constructors/:id', requireAdminApi, requireValidObjectId, async (req, res) => {
   try {
     const { position, team, color, drivers, points, wins, podiums, season } = req.body;
     
@@ -707,7 +850,7 @@ app.put('/api/constructors/:id', async (req, res) => {
   }
 });
 
-app.delete('/api/constructors/:id', async (req, res) => {
+app.delete('/api/constructors/:id', requireAdminApi, requireValidObjectId, async (req, res) => {
   try {
     const deleted = await Constructor.findByIdAndDelete(req.params.id);
     if (!deleted) {
@@ -760,20 +903,40 @@ app.get('/api/constructors/stats', async (req, res) => {
 app.get('/api/drivers', async (req, res) => {
   console.log('GET /api/drivers called');
   try {
-    const drivers = await Driver.find().sort({ points: -1 });
+    const { team, season, search } = req.query;
+    const filter = {};
+
+    if (team) filter.team = team;
+    if (season) filter.season = Number(season);
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { team: { $regex: search, $options: 'i' } },
+        { nationality: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const { page, limit, skip } = getPaginationParams(req.query);
+    const [total, drivers] = await Promise.all([
+      Driver.countDocuments(filter),
+      Driver.find(filter)
+        .populate('constructor', 'team color')
+        .sort({ points: -1 })
+        .skip(skip)
+        .limit(limit)
+    ]);
+
     console.log(`Found ${drivers.length} drivers`);
     
-
-    const simpleDrivers = drivers.map(driver => ({
-      id: driver._id,
-      name: driver.name,
-      team: driver.team,
-      points: driver.points || 0,
-      wins: driver.wins || 0,
-      podiums: driver.podiums || 0
-    }));
-    
-    res.json(simpleDrivers);
+    res.json({
+      success: true,
+      page,
+      limit,
+      total,
+      pages: Math.ceil(total / limit),
+      count: drivers.length,
+      data: drivers
+    });
     
   } catch (err) {
     console.error('Error in GET /api/drivers:', err);
@@ -784,10 +947,10 @@ app.get('/api/drivers', async (req, res) => {
   }
 });
 
-app.post('/api/drivers', async (req, res) => {
+app.post('/api/drivers', requireAdminApi, async (req, res) => {
   console.log('POST /api/drivers called with:', req.body);
   try {
-    const { name, team, points, wins, podiums } = req.body;
+    const { name, team, points, wins, podiums, constructorId } = req.body;
     
     if (!name || !team) {
       return res.status(400).json({ 
@@ -796,9 +959,33 @@ app.post('/api/drivers', async (req, res) => {
       });
     }
 
+    let constructorRef = null;
+    if (constructorId) {
+      if (!mongoose.isValidObjectId(constructorId)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid constructor id'
+        });
+      }
+      constructorRef = constructorId;
+    } else {
+      const constructorDoc = await Constructor.findOne({ team: team.trim() });
+      if (constructorDoc) {
+        constructorRef = constructorDoc._id;
+      }
+    }
+
+    if (!constructorRef) {
+      return res.status(400).json({
+        success: false,
+        error: 'Constructor not found. Create the constructor first.'
+      });
+    }
+
     const driver = new Driver({
       name: name.trim(),
       team: team.trim(),
+      constructor: constructorRef,
       nationality: 'Unknown',
       points: points ? Number(points) : 0,
       wins: wins ? Number(wins) : 0,
@@ -833,7 +1020,7 @@ app.post('/api/drivers', async (req, res) => {
   }
 });
 
-app.put('/api/drivers/:id', async (req, res) => {
+app.put('/api/drivers/:id', requireAdminApi, requireValidObjectId, async (req, res) => {
   console.log('PUT /api/drivers/:id called with:', req.params.id, req.body);
   try {
     const { points } = req.body;
@@ -881,7 +1068,7 @@ app.put('/api/drivers/:id', async (req, res) => {
   }
 });
 
-app.delete('/api/drivers/:id', async (req, res) => {
+app.delete('/api/drivers/:id', requireAdminApi, requireValidObjectId, async (req, res) => {
   console.log('DELETE /api/drivers/:id called with:', req.params.id);
   try {
     const deleted = await Driver.findByIdAndDelete(req.params.id);
@@ -990,7 +1177,8 @@ app.get('/api/auth/status', (req, res) => {
                 id: req.user._id,
                 username: req.user.username,
                 email: req.user.email,
-                role: req.user.role
+                role: req.user.role,
+                isActive: req.user.isActive !== false
             }
         });
     } else {
@@ -1114,7 +1302,7 @@ app.post('/register', async (req, res) => {
             username,
             email: email.toLowerCase(),
             password,
-            role: email === 'admin@f1tracker.com' ? 'admin' : 'user'
+            role: 'user'
         });
         
         await user.save();
@@ -1239,6 +1427,178 @@ app.post('/api/favorites/remove', isAuthenticated, async (req, res) => {
             error: 'Failed to remove from favorites'
         });
     }
+});
+
+// ================= Admin APIs =================
+app.get('/api/admin/users', requireAdminApi, async (req, res) => {
+  try {
+    const { search, role, status } = req.query;
+    const filter = {};
+
+    if (role) filter.role = role;
+    if (status === 'active') filter.isActive = true;
+    if (status === 'disabled') filter.isActive = false;
+
+    if (search) {
+      filter.$or = [
+        { username: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const { page, limit, skip } = getPaginationParams(req.query);
+    const [total, users] = await Promise.all([
+      User.countDocuments(filter),
+      User.find(filter)
+        .select('username email role isActive createdAt lastLogin')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+    ]);
+
+    res.json({
+      success: true,
+      page,
+      limit,
+      total,
+      pages: Math.ceil(total / limit),
+      count: users.length,
+      data: users
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.patch('/api/admin/users/:id/role', requireAdminApi, requireValidObjectId, async (req, res) => {
+  try {
+    const { role } = req.body;
+    if (!['user', 'admin'].includes(role)) {
+      return res.status(400).json({ success: false, error: 'Invalid role' });
+    }
+    if (req.user._id.toString() === req.params.id && role !== 'admin') {
+      return res.status(400).json({ success: false, error: 'You cannot remove your own admin role.' });
+    }
+
+    const updated = await User.findByIdAndUpdate(
+      req.params.id,
+      { role },
+      { new: true }
+    ).select('username email role isActive createdAt lastLogin');
+
+    if (!updated) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+    res.json({ success: true, data: updated });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.patch('/api/admin/users/:id/status', requireAdminApi, requireValidObjectId, async (req, res) => {
+  try {
+    const { isActive } = req.body;
+    if (typeof isActive !== 'boolean') {
+      return res.status(400).json({ success: false, error: 'isActive must be boolean' });
+    }
+    if (req.user._id.toString() === req.params.id && isActive === false) {
+      return res.status(400).json({ success: false, error: 'You cannot disable your own account.' });
+    }
+
+    const updated = await User.findByIdAndUpdate(
+      req.params.id,
+      { isActive },
+      { new: true }
+    ).select('username email role isActive createdAt lastLogin');
+
+    if (!updated) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+    res.json({ success: true, data: updated });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.delete('/api/admin/users/:id', requireAdminApi, requireValidObjectId, async (req, res) => {
+  try {
+    if (req.user._id.toString() === req.params.id) {
+      return res.status(400).json({ success: false, error: 'You cannot delete your own account.' });
+    }
+    const deleted = await User.findByIdAndDelete(req.params.id);
+    if (!deleted) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+    res.json({ success: true, message: 'User deleted', deletedId: deleted._id });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post('/api/admin/notifications', requireAdminApi, async (req, res) => {
+  try {
+    const { title, message } = req.body;
+    if (!title || !message) {
+      return res.status(400).json({ success: false, error: 'Title and message are required' });
+    }
+    const notification = new Notification({
+      title: title.trim(),
+      message: message.trim(),
+      createdBy: req.user._id
+    });
+    await notification.save();
+    res.status(201).json({ success: true, data: notification });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.get('/api/admin/notifications', requireAdminApi, async (req, res) => {
+  try {
+    const { page, limit, skip } = getPaginationParams(req.query);
+    const [total, notifications] = await Promise.all([
+      Notification.countDocuments(),
+      Notification.find()
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+    ]);
+    res.json({
+      success: true,
+      page,
+      limit,
+      total,
+      pages: Math.ceil(total / limit),
+      count: notifications.length,
+      data: notifications
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.get('/api/notifications', isAuthenticatedApi, async (req, res) => {
+  try {
+    const { page, limit, skip } = getPaginationParams(req.query);
+    const [total, notifications] = await Promise.all([
+      Notification.countDocuments(),
+      Notification.find()
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+    ]);
+    res.json({
+      success: true,
+      page,
+      limit,
+      total,
+      pages: Math.ceil(total / limit),
+      count: notifications.length,
+      data: notifications
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 app.get('/api/info', (req, res) => {

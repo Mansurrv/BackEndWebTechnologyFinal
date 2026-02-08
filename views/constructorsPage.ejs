@@ -3,106 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>F1 2024 - Constructors Championship</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inika:wght@400;700&display=swap" rel="stylesheet">
-
-    <!-- CSS -->
-    <link rel="stylesheet" href="/css/styleCOnstructors.css">
+    <title>Constructors | F1Tracker</title>
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/page.css">
+    <link rel="stylesheet" href="/css/styleCOnstructors.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="https://cdn-icons-png.flaticon.com/512/1995/1995515.png">
 </head>
-<body>
-    
-    <header>
-        <h1 class="page-title">Constructors</h1>
-        <h2 class="page-subtitle">current 2024 season</h2>
+<body class="page-body">
+    <%- include('partials/navbar', { user }) %>
+
+    <header class="page-hero">
+        <div class="container">
+            <h1 class="page-title">Constructors Championship</h1>
+            <p class="page-subtitle">Current 2024 season standings with team performance highlights.</p>
+        </div>
     </header>
 
-    <div class="container">
-        
-        <div class="table-container">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Position</th>
-                        <th>Team</th>
-                        <th>Drivers</th>
-                        <th>Points</th>
-                        <th>Wins</th>
-                        <th>Podiums</th>
-                    </tr>
-                </thead>
-                <tbody id="constructorsBody">
-                    <tr>
-                        <td>1</td>
-                        <td class="team-cell">
-                            <div class="team-info">
-                                <div class="team-color" style="background-color: #00D2BE;"></div>
-                                <span>Red Bull Racing</span>
-                            </div>
-                        </td>
-                        <td>Verstappen / Perez</td>
-                        <td class="points">524</td>
-                        <td>15</td>
-                        <td>22</td>
-                    </tr>
-                    <tr>
-                        <td>2</td>
-                        <td class="team-cell">
-                            <div class="team-info">
-                                <div class="team-color" style="background-color: #FF8700;"></div>
-                                <span>McLaren</span>
-                            </div>
-                        </td>
-                        <td>Norris / Piastri</td>
-                        <td class="points">412</td>
-                        <td>4</td>
-                        <td>18</td>
-                    </tr>
-                    <tr>
-                        <td>3</td>
-                        <td class="team-cell">
-                            <div class="team-info">
-                                <div class="team-color" style="background-color: #DC0000;"></div>
-                                <span>Ferrari</span>
-                            </div>
-                        </td>
-                        <td>Leclerc / Sainz</td>
-                        <td class="points">406</td>
-                        <td>3</td>
-                        <td>17</td>
-                    </tr>
-                    <tr>
-                        <td>4</td>
-                        <td class="team-cell">
-                            <div class="team-info">
-                                <div class="team-color" style="background-color: #00A19C;"></div>
-                                <span>Mercedes</span>
-                            </div>
-                        </td>
-                        <td>Hamilton / Russell</td>
-                        <td class="points">382</td>
-                        <td>1</td>
-                        <td>12</td>
-                    </tr>
-                    <tr>
-                        <td>5</td>
-                        <td class="team-cell">
-                            <div class="team-info">
-                                <div class="team-color" style="background-color: #0090FF;"></div>
-                                <span>Aston Martin</span>
-                            </div>
-                        </td>
-                        <td>Alonso / Stroll</td>
-                        <td class="points">280</td>
-                        <td>0</td>
-                        <td>8</td>
-                    </tr>
-                </tbody>
-            </table>
+    <section class="page-content">
+        <div class="container">
+            <div class="content-card table-card">
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Position</th>
+                                <th>Team</th>
+                                <th>Drivers</th>
+                                <th>Points</th>
+                                <th>Wins</th>
+                                <th>Podiums</th>
+                            </tr>
+                        </thead>
+                        <tbody id="constructorsBody">
+                            <tr>
+                                <td colspan="6">Loading constructors...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-    </div>
+    </section>
+
+    <%- include('partials/auth-modals') %>
 
     <script>
     async function loadConstructors() {
@@ -113,11 +57,16 @@
             throw new Error(`HTTP error ${res.status}`);
         }
 
-        const result = await res.json();     // result = { count, data }
-        const constructors = result.data || []; // constructors = массив
+        const result = await res.json();
+        const constructors = result.data || [];
 
         const tbody = document.getElementById('constructorsBody');
-        tbody.innerHTML = ''; // clear table
+        tbody.innerHTML = '';
+
+        if (!constructors.length) {
+            tbody.innerHTML = '<tr><td colspan="6">No constructors found.</td></tr>';
+            return;
+        }
 
         constructors.forEach(c => {
             const tr = document.createElement('tr');
@@ -139,12 +88,15 @@
         });
         } catch (err) {
         console.error('Failed to load constructors:', err);
+        const tbody = document.getElementById('constructorsBody');
+        tbody.innerHTML = '<tr><td colspan="6">Failed to load constructors.</td></tr>';
         }
     }
 
     window.onload = loadConstructors;
     </script>
-
-
+    <script src="/js/theme.js"></script>
+    <script src="/js/nav.js"></script>
+    <script src="/js/auth.js"></script>
 </body>
 </html>

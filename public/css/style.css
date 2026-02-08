@@ -13,6 +13,7 @@
     --text-color: #333333;
     --text-light: #666666;
     --bg-color: #FFFFFF;
+    --bg-color-rgb: 255, 255, 255;
     --bg-light: #F8F9FA;
     --card-bg: #FFFFFF;
     --border-color: #E0E0E0;
@@ -127,7 +128,7 @@
 .modal-header h2 {
     margin: 0;
     color: var(--text-primary);
-    font-family: 'Racing Sans One', sans-serif;
+    font-family: 'Poppins', sans-serif;
     font-size: 1.5rem;
     display: flex;
     align-items: center;
@@ -354,7 +355,7 @@
 }
 
 body {
-    font-family: 'Arial', sans-serif;
+    font-family: 'Poppins', sans-serif;
     line-height: 1.6;
     color: var(--text-color);
     background-color: var(--bg-color);
@@ -369,6 +370,7 @@ body.dark-mode {
     --text-color: var(--dark-text);
     --text-light: var(--dark-text-light);
     --bg-color: var(--dark-bg);
+    --bg-color-rgb: 18, 18, 18;
     --bg-light: var(--dark-bg-light);
     --card-bg: var(--dark-card-bg);
     --border-color: var(--dark-border);
@@ -399,7 +401,7 @@ body.dark-mode {
 }
 
 .section-header h2 {
-    font-family: 'Racing Sans One', cursive;
+    font-family: 'Poppins', sans-serif;
     font-size: 2.5rem;
     color: var(--text-color);
     margin-bottom: 10px;
@@ -507,7 +509,7 @@ body.dark-mode .moon-icon {
     display: flex;
     align-items: center;
     gap: 10px;
-    font-family: 'Racing Sans One', cursive;
+    font-family: 'Poppins', sans-serif;
     font-size: 1.8rem;
     color: var(--primary-color);
     text-decoration: none;
@@ -609,7 +611,7 @@ body.dark-mode .moon-icon {
 }
 
 .hero-title {
-    font-family: 'Racing Sans One', cursive;
+    font-family: 'Poppins', sans-serif;
     font-size: 4rem;
     color: var(--primary-color);
     margin-bottom: 10px;
@@ -1075,7 +1077,7 @@ body.dark-mode .moon-icon {
     align-items: center;
     justify-content: center;
     gap: 10px;
-    font-family: 'Racing Sans One', cursive;
+    font-family: 'Poppins', sans-serif;
     font-size: 2rem;
     margin-bottom: 20px;
     color: white;

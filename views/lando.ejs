@@ -5,9 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link href='https://cdn.boxicons.com/3.0.6/fonts/brands/boxicons-brands.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/page.css">
     <link rel="stylesheet" href="/css/driversPageStyle.css">
 </head>
-<body>  
+<body class="page-body">  
+    <%- include('partials/navbar', { user }) %>
     <div class="profile-card">
         <div class="image">
             <img src="https://www.kymillman.com/wp-content/uploads/f1/pages/driver-profiles/driver-faces/lando-norris-f1-driver-profile-picture.png" alt="" class="profile-img">
@@ -18,5 +21,9 @@
             <span class="group">McLaren</span>
         </div>
     </div>
+    <%- include('partials/auth-modals') %>
+    <script src="/js/theme.js"></script>
+    <script src="/js/nav.js"></script>
+    <script src="/js/auth.js"></script>
 </body>
 </html>

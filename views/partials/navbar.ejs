@@ -1,0 +1,68 @@
+<nav class="navbar">
+    <div class="nav-container">
+        <a href="/" class="logo">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/F1.svg/1200px-F1.svg.png" 
+                alt="F1 Logo" 
+                class="logo-img">
+            <span>F1Tracker</span>
+        </a>
+        <ul class="nav-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/constructorsPage">Constructors</a></li>
+            <li><a href="/driversPage">Drivers</a></li>
+            <li><a href="/#team">Team</a></li>
+            <li><a href="/#features">Features</a></li>
+            <li><a href="/contact">Contact</a></li>
+            <li><a href="/mongo">Filter</a></li>
+
+            <% if (user && user.role === 'admin') { %>
+                <li class="admin-only"><a href="/admin">Admin</a></li>
+                <li class="admin-only"><a href="/sqll">Datas</a></li>
+                <li class="admin-only"><a href="/add">Add</a></li>
+            <% } %>
+
+            <li id="userStatus" style="<%= user ? '' : 'display: none;' %>">
+                <div class="user-menu">
+                    <a href="/dashboard" class="user-welcome">
+                        <i class="fas fa-user"></i>
+                        <span id="usernameDisplay"><%= user ? user.username : '' %></span>
+                    </a>
+                    <div class="dropdown-menu">
+                        <a href="/dashboard" class="dropdown-item">
+                            <i class="fas fa-id-badge"></i> Profile
+                        </a>
+                        <a href="#" class="dropdown-item" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </div>
+                </div>
+            </li>
+
+            <li id="authButtons" style="<%= user ? 'display: none;' : '' %>">
+                <button class="btn-outline btn-small" id="loginBtn">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
+                <button class="btn-primary btn-small" id="registerBtn">
+                    <i class="fas fa-user-plus"></i> Register
+                </button>
+            </li>
+
+            <li class="theme-toggle">
+                <button class="theme-toggle-btn" id="themeToggle" aria-label="Toggle dark mode">
+                    <div class="toggle-slider">
+                        <i class="fas fa-sun"></i>
+                    </div>
+                    <span class="theme-icon sun-icon">
+                        <i class="fas fa-sun"></i>
+                    </span>
+                    <span class="theme-icon moon-icon">
+                        <i class="fas fa-moon"></i>
+                    </span>
+                </button>
+            </li>
+        </ul>
+        <button class="mobile-menu-btn">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+</nav>

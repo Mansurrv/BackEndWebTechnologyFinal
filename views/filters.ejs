@@ -2,29 +2,46 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>F1 Constructors</title>
+    <title>Filters | F1Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/page.css">
     <link rel="stylesheet" href="/css/filters.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="https://cdn-icons-png.flaticon.com/512/1995/1995515.png">
 </head>
-<body>
+<body class="page-body">
+    <%- include('partials/navbar', { user }) %>
 
-<h1>F1 Constructors Standings</h1>
+    <header class="page-hero">
+        <div class="container">
+            <h1 class="page-title">Constructor Filters</h1>
+            <p class="page-subtitle">Filter the standings by season, team, or points to explore performance trends.</p>
+        </div>
+    </header>
 
-<div class="filters">
-    <input type="number" id="season" placeholder="Season (e.g. 2024)">
-    <input type="text" id="team" placeholder="Team name">
-    <input type="number" id="minPoints" placeholder="Min points">
-    <input type="number" id="maxPoints" placeholder="Max points">
+    <section class="page-content">
+        <div class="container">
+            <div class="content-card filters-card">
+                <div class="filters">
+                    <input type="number" id="season" placeholder="Season (e.g. 2024)">
+                    <input type="text" id="team" placeholder="Team name">
+                    <input type="number" id="minPoints" placeholder="Min points">
+                    <input type="number" id="maxPoints" placeholder="Max points">
 
-    <select id="fields">
-        <option value="">All fields</option>
-        <option value="team,drivers,points">Team + Drivers + Points</option>
-        <option value="team,points,wins">Team + Points + Wins</option>
-    </select>
+                    <select id="fields">
+                        <option value="">All fields</option>
+                        <option value="team,drivers,points">Team + Drivers + Points</option>
+                        <option value="team,points,wins">Team + Points + Wins</option>
+                    </select>
 
-    <button onclick="loadConstructors()">Filter</button>
-</div>
+                    <button onclick="loadConstructors()">Filter</button>
+                </div>
+            </div>
 
-<div id="results" class="results"></div>
+            <div id="results" class="results"></div>
+        </div>
+    </section>
 
 <script>
 async function loadConstructors() {
@@ -51,7 +68,7 @@ async function loadConstructors() {
     results.innerHTML = '';
 
     if (!data.data || data.data.length === 0) {
-        results.innerHTML = '<p>No results found</p>';
+        results.innerHTML = '<p class="page-center">No results found</p>';
         return;
     }
 
@@ -74,6 +91,10 @@ async function loadConstructors() {
 // Load default data
 loadConstructors();
 </script>
+<%- include('partials/auth-modals') %>
 
+<script src="/js/theme.js"></script>
+<script src="/js/nav.js"></script>
+<script src="/js/auth.js"></script>
 </body>
 </html>

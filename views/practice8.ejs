@@ -2,10 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Items CRUD (MongoDB)</title>
+  <title>Items CRUD (Filter)</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/page.css">
   <link rel="stylesheet" href="/css/practice8.css">
 </head>
-<body>
+<body class="page-body">
+<%- include('partials/navbar', { user }) %>
 
 <h1>Items CRUD</h1>
 
@@ -109,5 +112,9 @@ async function deleteItem() {
 
 getItems();
 </script>
+<%- include('partials/auth-modals') %>
+<script src="/js/theme.js"></script>
+<script src="/js/nav.js"></script>
+<script src="/js/auth.js"></script>
 </body>
 </html>

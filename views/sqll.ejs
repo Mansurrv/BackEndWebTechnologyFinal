@@ -3,9 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <title>Drivers CRUD</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/page.css">
   <style>
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: 'Poppins', sans-serif;
       background-color: #f1f5f9;
       display: flex;
       flex-direction: column; 
@@ -71,7 +73,8 @@
     }
   </style>
 </head>
-<body>
+<body class="page-body">
+<%- include('partials/navbar', { user }) %>
 
 <h1>Drivers CRUD Management</h1>
 
@@ -197,10 +200,14 @@
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
       
-      const drivers = await response.json();
-      console.log('Drivers data:', drivers);
+      const result = await response.json();
+      console.log('Drivers data:', result);
+
+      const driversArray = Array.isArray(result)
+        ? result
+        : (result.data || []);
       
-      if (!drivers || drivers.length === 0) {
+      if (!driversArray || driversArray.length === 0) {
         driversList.innerHTML = '<li>No drivers found</li>';
         return;
       }
@@ -209,12 +216,13 @@
       driversList.innerHTML = '';
       
       // Add each driver to the list
-      drivers.forEach(driver => {
+      driversArray.forEach(driver => {
+        const driverId = driver.id || driver._id;
         const li = document.createElement('li');
         li.innerHTML = `
           <strong>${driver.name}</strong> (${driver.team})<br>
           Points: ${driver.points} | Wins: ${driver.wins} | Podiums: ${driver.podiums}<br>
-          ID: ${driver.id}
+          ID: ${driverId}
         `;
         driversList.appendChild(li);
       });
@@ -295,5 +303,11 @@
     }
   }
 </script>
+
+<%- include('partials/auth-modals') %>
+
+<script src="/js/theme.js"></script>
+<script src="/js/nav.js"></script>
+<script src="/js/auth.js"></script>
 </body>
 </html>
