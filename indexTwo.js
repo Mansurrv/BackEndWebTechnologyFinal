@@ -147,6 +147,12 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Driver'
   }],
+  notifications: [{
+    title: { type: String, required: true, trim: true },
+    message: { type: String, required: true, trim: true },
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    createdAt: { type: Date, default: Date.now }
+  }],
   role: {
     type: String,
     enum: ['user', 'admin'],
@@ -1547,6 +1553,19 @@ app.post('/api/admin/notifications', requireAdminApi, async (req, res) => {
       createdBy: req.user._id
     });
     await notification.save();
+    await User.updateMany(
+      { isActive: true },
+      {
+        $push: {
+          notifications: {
+            title: notification.title,
+            message: notification.message,
+            createdBy: notification.createdBy,
+            createdAt: notification.createdAt
+          }
+        }
+      }
+    );
     res.status(201).json({ success: true, data: notification });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -1580,6 +1599,26 @@ app.get('/api/admin/notifications', requireAdminApi, async (req, res) => {
 app.get('/api/notifications', isAuthenticatedApi, async (req, res) => {
   try {
     const { page, limit, skip } = getPaginationParams(req.query);
+    const user = await User.findById(req.user._id).select('notifications');
+    const userNotifications = Array.isArray(user?.notifications)
+      ? [...user.notifications]
+      : [];
+
+    if (userNotifications.length) {
+      userNotifications.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      const total = userNotifications.length;
+      const paged = userNotifications.slice(skip, skip + limit);
+      return res.json({
+        success: true,
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+        count: paged.length,
+        data: paged
+      });
+    }
+
     const [total, notifications] = await Promise.all([
       Notification.countDocuments(),
       Notification.find()
@@ -1587,7 +1626,7 @@ app.get('/api/notifications', isAuthenticatedApi, async (req, res) => {
         .skip(skip)
         .limit(limit)
     ]);
-    res.json({
+    return res.json({
       success: true,
       page,
       limit,

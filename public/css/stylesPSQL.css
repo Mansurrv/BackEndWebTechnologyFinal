@@ -1,5 +1,5 @@
 body {
-  font-family: 'Poppins', sans-serif;
+  font-family: Arial, sans-serif;
   background-color: #f1f5f9;
   /* Changed from center-center to center-top for better scrolling */
   display: flex;

@@ -21,6 +21,22 @@
                 <li class="admin-only"><a href="/add">Add</a></li>
             <% } %>
 
+            <% if (user) { %>
+                <li class="notifications-menu">
+                    <button class="notification-btn" id="notificationBell" type="button" aria-label="Notifications">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-count" id="notificationCount" style="display: none;">0</span>
+                    </button>
+                    <div class="notification-dropdown" id="notificationDropdown">
+                        <div class="notification-dropdown-header">Notifications</div>
+                        <div class="notification-dropdown-list" id="notificationDropdownList">
+                            <div class="notification-empty">Loading...</div>
+                        </div>
+                        <a class="notification-dropdown-footer" href="/dashboard">View all</a>
+                    </div>
+                </li>
+            <% } %>
+
             <li id="userStatus" style="<%= user ? '' : 'display: none;' %>">
                 <div class="user-menu">
                     <a href="/dashboard" class="user-welcome">
@@ -66,3 +82,5 @@
         </button>
     </div>
 </nav>
+
+<script src="/js/notifications.js"></script>

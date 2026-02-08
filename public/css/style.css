@@ -128,7 +128,7 @@
 .modal-header h2 {
     margin: 0;
     color: var(--text-primary);
-    font-family: 'Poppins', sans-serif;
+    font-family: Arial, sans-serif;
     font-size: 1.5rem;
     display: flex;
     align-items: center;
@@ -355,7 +355,7 @@
 }
 
 body {
-    font-family: 'Poppins', sans-serif;
+    font-family: Arial, sans-serif;
     line-height: 1.6;
     color: var(--text-color);
     background-color: var(--bg-color);
@@ -401,7 +401,7 @@ body.dark-mode {
 }
 
 .section-header h2 {
-    font-family: 'Poppins', sans-serif;
+    font-family: Arial, sans-serif;
     font-size: 2.5rem;
     color: var(--text-color);
     margin-bottom: 10px;
@@ -509,11 +509,15 @@ body.dark-mode .moon-icon {
     display: flex;
     align-items: center;
     gap: 10px;
-    font-family: 'Poppins', sans-serif;
+    font-family: Arial, sans-serif;
     font-size: 1.8rem;
     color: var(--primary-color);
     text-decoration: none;
     transition: var(--transition);
+}
+
+.logo span {
+    font-weight: 700;
 }
 
 .logo:hover {
@@ -558,6 +562,105 @@ body.dark-mode .moon-icon {
 
 .nav-links a:hover::after {
     width: 100%;
+}
+
+.notifications-menu {
+    position: relative;
+}
+
+.notification-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-light);
+    color: var(--text-color);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.notification-btn:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.notification-count {
+    min-width: 18px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: var(--primary-color);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.notification-dropdown {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 10px);
+    width: 320px;
+    max-width: 85vw;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 12px;
+    display: none;
+    z-index: 1100;
+}
+
+.notification-dropdown.open {
+    display: block;
+}
+
+.notification-dropdown-header {
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 8px;
+}
+
+.notification-dropdown-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 280px;
+    overflow-y: auto;
+}
+
+.notification-dropdown-item {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 8px 10px;
+    background: var(--bg-light);
+}
+
+.notification-dropdown-item strong {
+    display: block;
+    margin-bottom: 4px;
+}
+
+.notification-dropdown-item .meta {
+    color: var(--text-light);
+    font-size: 0.8rem;
+    margin-bottom: 4px;
+}
+
+.notification-empty {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    padding: 6px 4px;
+}
+
+.notification-dropdown-footer {
+    display: block;
+    margin-top: 10px;
+    text-align: center;
+    text-decoration: none;
+    color: var(--primary-color);
+    font-weight: 600;
 }
 
 .mobile-menu-btn {
@@ -611,7 +714,7 @@ body.dark-mode .moon-icon {
 }
 
 .hero-title {
-    font-family: 'Poppins', sans-serif;
+    font-family: Arial, sans-serif;
     font-size: 4rem;
     color: var(--primary-color);
     margin-bottom: 10px;
@@ -1077,7 +1180,7 @@ body.dark-mode .moon-icon {
     align-items: center;
     justify-content: center;
     gap: 10px;
-    font-family: 'Poppins', sans-serif;
+    font-family: Arial, sans-serif;
     font-size: 2rem;
     margin-bottom: 20px;
     color: white;

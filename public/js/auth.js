@@ -518,7 +518,7 @@ function addModalStyles() {
         .modal-header h2 {
             margin: 0;
             color: var(--text-primary);
-            font-family: 'Racing Sans One', sans-serif;
+            font-family: Arial, sans-serif;
             font-size: 1.5rem;
             display: flex;
             align-items: center;
